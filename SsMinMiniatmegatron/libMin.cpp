@@ -33,11 +33,14 @@
 #include "libMasterClock.h"
 #include "libMidi.h"
 #include "libAtmPatch.h"
+
+#include "libWavetable.h"
 #include "libAmplifier.h"
+
 #include "libAtmOscillator.h"
 #include "libAtmAudio.h"
 #include "libEnvelope.h"
-#include "libBiquadFilter.h"
+#include "libBiquadFilter.h"f
 #include "libLfo.h"
 #include "libPortamento.h"
 #include "libAtmPitch.h"
@@ -58,20 +61,28 @@ Min::Min() : engine_(MinEngine::getInstance()), hardware_(MinHardware::getInstan
 	hardware_.construct(this);
 } //Min
 
+
+
+
 // default destructor
 Min::~Min()
 {
 } //~Min
 
+
+
+
 void Min::initialize()
 {
 	unsigned char i;
 	hardware_.beginMidi(MIDI_UBRR);
-	for(i=0;i<2;++i)
-	{
+
+  //Set LEDs to RED
+	for(i=0;i<2;++i){
 		hardware_.getLed(i).setColour(LedRgb::RED);
 	}
 	hardware_.refreshLEDs();
+
 	engine_.initialize();
 	if(hardware_.getFirstBoot()==true)
 	{
@@ -80,6 +91,9 @@ void Min::initialize()
 	engine_.setFunction(MinEngine::FUNC_PATTERN);
 	engine_.setBank(hardware_.getSwitch(MinHardware::SW_BANK).getState());
 }
+
+
+
 
 void Min::poll(unsigned char ticksPassed)
 {
@@ -91,20 +105,32 @@ void Min::poll(unsigned char ticksPassed)
 	hardware_.refreshLEDs();
 	engine_.poll(ticksPassed);
 }
+
+
+
+
 //***********engine events*********************
 void Min::engineValueChanged(unsigned char func, unsigned char val, bool opt)
 {
 	bool col;
 	hardware_.getLed(MinHardware::LED_FUNC).setColour((LedRgb::LedRgbColour)func);
 }
+
+
+
 void Min::engineBankChanged(unsigned char bank)
 {
 	//shown physically on switch
 }
+
+
+
 void Min::engineMidiTransmit(unsigned char data)
 {
 	hardware_.writeMidi(data);
 }
+
+
 
 void Min::refreshValueLed()
 {
@@ -144,15 +170,18 @@ void Min::refreshValueLed()
 			hardware_.getLed(MinHardware::LED_VALUE).setColour(LedRgb::OFF);
 		}
 	}
-
 }
 
 
-//**************************hardware events************************************
+//*****************************************************************************
+//************************* hardware events ***********************************
+//*****************************************************************************
 void Min::hardwareAnalogueControlChanged(unsigned char control, unsigned char newValue)
 {
 	engine_.getPatchPtr()->setCtrlValue(engine_.getBank(),control,newValue);
 }
+
+
 
 void Min::hardwareSwitchChanged(unsigned char switch_, unsigned char newValue)
 {
@@ -237,7 +266,7 @@ void Min::hardwareSwitchChanged(unsigned char switch_, unsigned char newValue)
 		}
 	}
 
-	if(switch_==MinHardware::SW_PLAY)
+ 	if(switch_==MinHardware::SW_PLAY)
 	{
 		if(newValue==HIGH)
 		{
@@ -254,6 +283,9 @@ void Min::hardwareSwitchChanged(unsigned char switch_, unsigned char newValue)
 		engine_.setBank(newValue);
 	}
 }
+
+
+
 void Min::hardwareSwitchHeld(unsigned char switch_)
 {
 	unsigned char col = (unsigned char)hardware_.getLed(MinHardware::LED_FUNC).getColour();
@@ -265,6 +297,8 @@ void Min::hardwareSwitchHeld(unsigned char switch_)
 		hardware_.setFirstBoot(false);
 	}
 }
+
+
 
 void Min::hardwareMidiReceived(unsigned char data)
 {

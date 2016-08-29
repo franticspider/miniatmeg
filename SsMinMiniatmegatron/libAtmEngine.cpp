@@ -101,12 +101,14 @@ void AtmEngine::construct(AtmEngineBase* base)
 	pwm_ = new Pwm(WAVE_LENGTH);
 }
 
+
 void AtmEngine::initialize()
 {
 	unsigned char i,j;
 	
 	audio_->initialize();
-	//load vanilla
+ 
+	/* load the patch */
 	for(i=0;i<6;++i)
 	{
 		for(j=0;j<2;++j)
@@ -123,6 +125,9 @@ void AtmEngine::initialize()
 	setFunction(FUNC_WAVE);
 	setBank(LOW);
 }
+
+
+
 void AtmEngine::poll(unsigned char ticksPassed)
 {
 	unsigned char i;
@@ -207,11 +212,14 @@ void AtmEngine::triggerNote(unsigned char note)
 	ampEnvelope_.trigger();
 	filtEnvelope_.trigger();
 }
+
+
 void AtmEngine::releaseNote()
 {
 	ampEnvelope_.release();
 	filtEnvelope_.release();
 }
+
 
 void AtmEngine::tieOptions(Func minFunc, Func maxFunc, bool newOpt)
 {
@@ -223,6 +231,9 @@ void AtmEngine::tieOptions(Func minFunc, Func maxFunc, bool newOpt)
 		}
 	}
 }
+
+
+
 void AtmEngine::tieControls(unsigned char bank, unsigned char ctrl)
 {
 	if(patch_->getCtrlValue(HIGH-bank,ctrl)!=patch_->getCtrlValue(bank,ctrl))
@@ -230,6 +241,9 @@ void AtmEngine::tieControls(unsigned char bank, unsigned char ctrl)
 		patch_->setCtrlValue(HIGH-bank,ctrl,patch_->getCtrlValue(bank,ctrl));
 	}
 }
+
+
+
 void AtmEngine::writeSysexPatch(unsigned char patchNum)
 {
 	unsigned char sys_mess[AtmPatch::SYSEX_SIZE + 1];
@@ -242,6 +256,9 @@ void AtmEngine::writeSysexPatch(unsigned char patchNum)
 	}
 	midi_->writeSysex(sys_mess,sizeof(sys_mess));
 }
+
+
+
 void AtmEngine::writeSysexUserWave(unsigned char waveNum)
 {
 	unsigned char sys_mess[32 + 1];
@@ -257,6 +274,9 @@ void AtmEngine::writeSysexUserWave(unsigned char waveNum)
 	}
 	midi_->writeSysex(sys_mess,sizeof(sys_mess));
 }
+
+
+
 void AtmEngine::writeSysexMemDump()
 {
 	unsigned char sys_mess[1];
@@ -264,6 +284,9 @@ void AtmEngine::writeSysexMemDump()
 	sys_mess[0] = SYSEX_MEM;
 	midi_->writeSysex(sys_mess,sizeof(sys_mess));
 }
+
+
+
 void AtmEngine::writeSysexCallPatch(unsigned char patchNum)
 {
 	unsigned char sys_mess[2] = {0};
@@ -271,6 +294,9 @@ void AtmEngine::writeSysexCallPatch(unsigned char patchNum)
 	sys_mess[1] = patchNum;
 	midi_->writeSysex(sys_mess,sizeof(sys_mess));
 }
+
+
+
 void AtmEngine::writeSysexCallUserWave(unsigned char waveNum)
 {
 	unsigned char sys_mess[2] = {0};
@@ -278,7 +304,11 @@ void AtmEngine::writeSysexCallUserWave(unsigned char waveNum)
 	sys_mess[1] = waveNum;
 	midi_->writeSysex(sys_mess,sizeof(sys_mess));
 }
-void AtmEngine::refreshSysex()
+
+
+
+
+void AtmEngine::refreshSysex()  
 {
 	if (sysexComplete_==true)
 	{
@@ -340,6 +370,9 @@ void AtmEngine::refreshSysex()
 		}
 	}
 }
+
+
+
 //***********************MIDI events********************************************
 void AtmEngine::midiNoteOnReceived(unsigned char note, unsigned char velocity)
 {
@@ -357,6 +390,8 @@ void AtmEngine::midiNoteOnReceived(unsigned char note, unsigned char velocity)
 	noteOrder_[note] = midi_->getTotNotesOn();
 	noteLast_ = note;
 	#endif
+
+	
 	if(arpeggiator_->getType()==0)
 	{
 		#if LEGATO==1
@@ -383,6 +418,9 @@ void AtmEngine::midiNoteOnReceived(unsigned char note, unsigned char velocity)
 	}
 	totNotesOnLast_ = midi_->getTotNotesOn();
 }
+
+
+
 
 void AtmEngine::midiNoteOffReceived(unsigned char note)
 {
@@ -459,55 +497,82 @@ void AtmEngine::midiClockStopReceived()
 	masterClock_.setTicksPerCycle(BPM_TICKS);
 	arpeggiator_->reset();
 }
+
+
+
+
+/* MIDI control surface handler*/
 void AtmEngine::midiControlChangeReceived(unsigned char cc, unsigned char val)
 {
 	switch ((MidiCC)cc)
 	{
-		case CC_PITCHLFO:
-		patch_->setCtrlValue(HIGH,CTRL_LFO,val>>1);
-		break;
+    /*CONTROLS, BANK A:*/
+    case CC_FILTCUTOFF:
+    patch_->setCtrlValue(LOW,CTRL_FILT,val<<1);
+    break;
+    case CC_FILTERENV:
+    patch_->setCtrlValue(LOW,CTRL_ENV,val<<1);
+    break;
+    case CC_FILTLFO:
+    patch_->setCtrlValue(LOW,CTRL_LFO,val<<1);
+    break;
+    case CC_AMPLFO:
+    patch_->setCtrlValue(LOW,CTRL_AMP,val<<1);
+    break;
+    case CC_DISTORTION:
+    patch_->setCtrlValue(LOW,CTRL_FX,val<<1);
+    break;
+
+
+    /*CONTROLS, BANK B:*/
+    case CC_FILTRES:
+    patch_->setCtrlValue(LOW,CTRL_Q,val<<1);
+    break;
+    case CC_PITCHENV:
+    patch_->setCtrlValue(HIGH,CTRL_ENV,val<<1);
+    break;
+    case CC_PITCHLFO:/* Note! the original had the >> wrong I think */
+    /*patch_->setCtrlValue(HIGH,CTRL_LFO,val>>1);*/
+    patch_->setCtrlValue(HIGH,CTRL_LFO,val<<1);
+    break;
+    case CC_PWM:
+    patch_->setCtrlValue(HIGH,CTRL_FX,val<<1);
+    break;
+    case CC_FLANGE: /* Written as 'Phaser' in the manual! */
+    patch_->setCtrlValue(HIGH,CTRL_FX,val<<1);
+    break;
+
+
+    /*miniATM functions (following the LED colour code) */
+    /* Waveform (BLACK) (CC_FUNC_WAVE)*/
+    case CC_FUNC_WAVE:
+    patch_->setFunctionValue(FUNC_WAVE,val>>3);
+    break;
+
+
+    /* These are Atmegatron functions, and so do not map directly to the mini's LED function buttton, but allow much more flexibility! */
 		case CC_PORTAMENTO:
 		patch_->setFunctionValue(FUNC_PORTA,val>>3);
 		break;
-		case CC_FILTERENV:
-		patch_->setCtrlValue(LOW,CTRL_ENV,val<<1);
-		break;
-		case CC_DISTORTION:
-		patch_->setCtrlValue(LOW,CTRL_FX,val<<1);
-		break;
-		case CC_FILTCUTOFF:
-		patch_->setCtrlValue(LOW,CTRL_FILT,val<<1);
-		break;
+
+    /* AD*R envelope values */
 		case CC_AMPENVR:
 		patch_->setFunctionValue(FUNC_AENVR,val>>3);
 		break;
 		case CC_AMPENVA:
 		patch_->setFunctionValue(FUNC_AENVA,val>>3);
 		break;
-		case CC_FILTRES:
-		patch_->setCtrlValue(LOW,CTRL_Q,val<<1);
-		break;
 		case CC_AMPENVD:
 		patch_->setFunctionValue(FUNC_AENVD,val>>3);
 		break;
+
+    /* LFO speed */
 		case CC_LFOCLOCKDIV:
 		patch_->setFunctionValue(FUNC_LFOSPEED,val>>3);
 		break;
-		case CC_PWM:
-		patch_->setCtrlValue(HIGH,CTRL_FX,val<<1);
-		break;
-		case CC_AMPLFO:
-		patch_->setCtrlValue(LOW,CTRL_AMP,val<<1);
-		break;
-		case CC_FILTLFO:
-		patch_->setCtrlValue(LOW,CTRL_LFO,val<<1);
-		break;
-		case CC_PITCHENV:
-		patch_->setCtrlValue(HIGH,CTRL_ENV,val<<1);
-		break;
-		case CC_FLANGE:
-		patch_->setCtrlValue(HIGH,CTRL_FX,val<<1);
-		break;
+
+
+    /*TURN ALL NOTES OFF - USEFUL IN AN EMERGENCY!!!*/
 		case CC_ALLNOTESOFF:
 		midi_->reset();
 		break;
@@ -576,9 +641,11 @@ void AtmEngine::patchValueChanged(unsigned char func, unsigned char newValue)
 		case FUNC_WAVE:
 		oscillator_->setTable(newValue);
 		break;
+    
 		case FUNC_FILT:
 		filter_.setType((BiquadFilter::FiltType) newValue);
 		break;
+    
 		case FUNC_FENVA:
 		filtEnvelope_.setAttack(pgm_read_word(&(ENV_ADR_INC[newValue])));
 		break;
@@ -589,6 +656,8 @@ void AtmEngine::patchValueChanged(unsigned char func, unsigned char newValue)
 		case FUNC_FENVS:
 		filtEnvelope_.setSustain(pgm_read_word(&(ENV_S_LEVEL[newValue])));
 		break;
+		
+		
 		case FUNC_AENVA:
 		ampEnvelope_.setAttack(pgm_read_word(&(ENV_ADR_INC[newValue])));
 		break;
@@ -601,18 +670,23 @@ void AtmEngine::patchValueChanged(unsigned char func, unsigned char newValue)
 		case FUNC_AENVR:
 		ampEnvelope_.setRelease(pgm_read_word(&(ENV_ADR_INC[newValue])));
 		break;
+		
+		
 		case FUNC_LFOTYPE:
 		lfo_.setTable(newValue);
 		break;
+		
 		case FUNC_LFOSPEED:
 		lfo_.setDivision(newValue);
 		break;
+		
 		case FUNC_ARPTYPE:
 		arpeggiator_->setType(newValue);
 		break;
 		case FUNC_ARPSPEED:
 		arpeggiator_->setDivision(newValue);
 		break;
+		
 		case FUNC_PORTA:
 		portamento_.setSpeed(pgm_read_word(&(PORTA_SPEED[newValue])));
 		break;

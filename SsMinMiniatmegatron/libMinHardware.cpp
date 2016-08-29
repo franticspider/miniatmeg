@@ -30,7 +30,7 @@
 #include "libSwitch.h"
 #include "libSsHelpers.h"
 
-#include "MinHardware.h"
+#include "libMinHardware.h"
 
 //#define DEBUG 1
 
@@ -181,55 +181,49 @@ void MinHardware::refreshFlash(unsigned char ticksPassed)
 	}
 }
 
+
+
 void MinHardware::refreshLEDs()
 {
-
-	if(bitRead((unsigned char)led_[LED_FUNC].getColour(),0)==1)
-	{
+  /* Set the LED functions*/
+	if(bitRead((unsigned char)led_[LED_FUNC].getColour(),0)==1){
 		bitSet(PORTB,PINB1);
 	}
-	else
-	{
+	else{
 		bitClear(PORTB,PINB1);
 	}
 
-	if(bitRead((unsigned char)led_[LED_FUNC].getColour(),1)==1)
-	{
+	if(bitRead((unsigned char)led_[LED_FUNC].getColour(),1)==1){
 		bitSet(PORTB,PINB3);
 	}
-	else
-	{
+	else{
 		bitClear(PORTB,PINB3);
 	}
 
-	if(bitRead((unsigned char)led_[LED_FUNC].getColour(),2)==1)
-	{
+	if(bitRead((unsigned char)led_[LED_FUNC].getColour(),2)==1){
 		bitSet(PORTB,PINB2);
 	}
-	else
-	{
+	else{
 		bitClear(PORTB,PINB2);
 	}
-	
-	if(bitRead((unsigned char)led_[LED_VALUE].getColour(),0)==1)
-	{
+
+  /*Set the LED values */
+	if(bitRead((unsigned char)led_[LED_VALUE].getColour(),0)==1){
 		bitSet(PORTD,PIND5);
 	}
-	else
-	{
+	else{
 		bitClear(PORTD,PIND5);
 	}
 	
-	if(bitRead((unsigned char)led_[LED_VALUE].getColour(),1)==1)
-	{
+	if(bitRead((unsigned char)led_[LED_VALUE].getColour(),1)==1){
 		bitSet(PORTD,PIND6);
 	}
-	else
-	{
+	else{
 		bitClear(PORTD,PIND6);
 	}
-
 }
+
+
 
 void MinHardware::pollAnlControls(unsigned char ticksPassed)
 {
@@ -283,17 +277,26 @@ void MinHardware::pollMidi()
 		midiError = MIDIERR_NONE;
 	}
 }
+
+
+/*Called by Min::initialize. Sets the rates and sizes of various low level registers */
 void MinHardware::beginMidi(unsigned int ubrr)
 {
 	/*Set baud rate */
 	bitSet(UCSR0A,U2X0);
-	UBRR0H = (unsigned char)(ubrr>>8);
-	UBRR0L = (unsigned char)ubrr;
+
+  /*Set the baud rate divider, ubrr == 63 */
+	UBRR0H = (unsigned char)(ubrr>>8);  
+	UBRR0L = (unsigned char)ubrr;       
+
 	bitSet(UCSR0B,RXEN0);
 	bitSet(UCSR0B,TXEN0);
 	bitSet(UCSR0B,RXCIE0);
 	bitClear(UCSR0B, UDRIE0);
 }
+
+
+
 void MinHardware::writeMidi(unsigned char data )
 {
 	/* Wait for empty transmit buffer */

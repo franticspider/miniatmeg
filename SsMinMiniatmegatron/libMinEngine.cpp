@@ -19,8 +19,9 @@
 
 #include <avr/pgmspace.h>
 
-
+#include "libWavetable.h"
 #include "libAtmAudio.h"
+
 #include "libAtmOscillator.h"
 #include "libAtmPatchBase.h"
 #include "libAtmPatch.h"
@@ -34,8 +35,10 @@
 #include "libLfo.h"
 #include "libPortamento.h"
 #include "libAtmPitch.h"
-#include "libMidi.h"
+
 #include "libMidiBase.h"
+#include "libMidi.h"
+
 #include "libStepSequencerBase.h"
 #include "libStepSequencer.h"
 #include "libWavecrusher.h"
@@ -98,15 +101,18 @@ void MinEngine::construct(MinEngineBase* base)
 	pwm_ = new Pwm(WAVE_LENGTH);
 }
 
+
 void MinEngine::initialize()
 {
-	unsigned char i,j;
+	//unsigned char i,j;
 	audio_->initialize();
 	midi_->setChannel(MIDI_CHANNEL);
 	patch_->readPatch(PATCH_NUM);
 	setFunction(FUNC_WAVE);
 	setBank(LOW);
 }
+
+
 void MinEngine::initPatch()
 {
 	patch_->setFunctionValue(FUNC_WAVE,0);

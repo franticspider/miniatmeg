@@ -22,14 +22,12 @@
 #include "libMinHardwareBase.h"
 #include "libMinEngineBase.h"
 
-  /*Headers for MinEngine in order of error message */
+/*Headers for MinEngine in order of error message */
 #include "libMidiBase.h"
 #include "libStepSequencerBase.h"
 #include "libAtmPatchBase.h"
 #include "libMasterClock.h"
 #include "libMidi.h"
-
-
 
 #include "libAtmPatch.h"
 #include "libWavetable.h"

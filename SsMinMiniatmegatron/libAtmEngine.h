@@ -45,35 +45,58 @@ class AtmEngine : public MidiBase, ArpeggiatorBase, AtmPatchBase
 		CTRL_FX
 	};
 	enum Func : unsigned char
-	{
+	{/*TODO: Check that re-ordering like this hasn't caused HUGE problems.... :( */
+    /* Waveform (BLACK) (CC_FUNC_WAVE)*/
 		FUNC_WAVE,
+
+    /* Filter type (RED) (CC_FUNC_FILT)*/
 		FUNC_FILT,
+
+    /* Filter / Pitch Envelope (GREEN) */
 		FUNC_FENVA,
 		FUNC_FENVDR,
 		FUNC_FENVS,
+
+    /* Amplitude Envelope (YELLOW) */
 		FUNC_AENVA,
 		FUNC_AENVD,
 		FUNC_AENVS,
 		FUNC_AENVR,
+
+    /* LFO shape (BLUE) */
 		FUNC_LFOTYPE,
+
+    /* LFO speed (PURPLE) */
 		FUNC_LFOSPEED,
+
+    /* ?? */
 		FUNC_ARPTYPE,
 		FUNC_ARPSPEED,
+
+    /* Wavecrusher / portamento (SKYBLUE) */
 		FUNC_PORTA,
 		FUNC_BITCRUSH,
+    
 		FUNC_MEM
 	};
+	
 	enum MidiCC : unsigned char
 	{
 		CC_PITCHLFO = 1,
-		CC_PORTAMENTO = 5,
+		CC_PORTAMENTO = 5,	//NONSTANDARD
 		CC_FILTERENV = 16,
 		CC_DISTORTION = 17,
+
+    /* These are the func commands */
+    CC_FUNC_WAVE = 30, //BLACK
+    CC_FUNC_FILT = 31, //RED
+
+    
 		CC_FILTCUTOFF = 74,
-		CC_AMPENVR = 72,
-		CC_AMPENVA = 73,
+		CC_AMPENVR = 72,	//NONSTANDARD
+		CC_AMPENVA = 73,	//NONSTANDARD
 		CC_FILTRES = 71,
-		CC_AMPENVD = 75,
+		CC_AMPENVD = 75,	//NONSTANDARD
 		CC_LFOCLOCKDIV = 79,
 		CC_PWM = 91,
 		CC_AMPLFO = 92,
@@ -82,6 +105,7 @@ class AtmEngine : public MidiBase, ArpeggiatorBase, AtmPatchBase
 		CC_FLANGE = 95,
 		CC_ALLNOTESOFF = 123
 	};
+  
 	enum MidiSysex : unsigned char
 	{
 		SYSEX_PATCH = 0,
@@ -94,10 +118,13 @@ class AtmEngine : public MidiBase, ArpeggiatorBase, AtmPatchBase
 	private:
 	static const unsigned char SYSEX_PROD_ID = 0;
 	static const unsigned int MIDI_TICKSPERCYCLE = 1536;
+
+  /* Note priority */
 	#define NP_CLASSIC 0
 	#define NP_LOW 1
 	#define NP_HIGH 2
 	#define NP_LAST 3
+
 	MasterClock masterClock_;
 	Midi* midi_;
 	AtmPatch* patch_;
